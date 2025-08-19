@@ -13,25 +13,27 @@ import { obtenerUsuarios } from '../services/usuarios';
 import { Usuario } from '../types/Usuario';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+// Define el tipo para la navegación y las rutas de la aplicación
 type RootStackParamList = {
     Materiales: undefined;
     Usuarios: undefined;
     Lugares: undefined;
     Login: undefined;
-    Welcome: undefined;
+    Falla: undefined;
 };
 
+// Define the props para el componente de UsuariosScreen
 type Props = NativeStackScreenProps<RootStackParamList, 'Usuarios'>;
 
 export default function UsuariosScreen({ navigation }: Props) {
     const [usuarios, setUsuarios] = useState<Usuario[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
+    // Efecto para cargar los usuarios al montar el componente
     useEffect(() => {
         fetchUsuarios();
     }, []);
-
+    // Función para obtener los usuarios desde el servicio
     const fetchUsuarios = async () => {
         try {
             const data = await obtenerUsuarios();
@@ -43,7 +45,8 @@ export default function UsuariosScreen({ navigation }: Props) {
             setLoading(false);
         }
     };
-
+    // Función para manejar el cierre de sesión
+    // Muestra una alerta de confirmación antes de cerrar sesión
     const handleLogout = () => {
         Alert.alert(
             'Cerrar sesión',
@@ -72,11 +75,10 @@ export default function UsuariosScreen({ navigation }: Props) {
     if (error) {
         return <Text style={styles.error}>{error}</Text>;
     }
-
+// Renderiza la lista de usuarios
     return (
         <View style={styles.container}>
             <ScrollView style={styles.tableContainer}>
-                {/* Encabezado de la tabla */}
                 <View style={styles.tableHeader}>
                     <Text style={styles.headerText}>ID</Text>
                     <Text style={styles.headerText}>Nombre</Text>
@@ -84,7 +86,6 @@ export default function UsuariosScreen({ navigation }: Props) {
                     <Text style={styles.headerText}>Rol</Text>
                 </View>
 
-                {/* Filas de la tabla */}
                 {usuarios.map((usuario, index) => (
                     <View
                         key={usuario.id_usuario.toString()}
@@ -100,8 +101,7 @@ export default function UsuariosScreen({ navigation }: Props) {
                     </View>
                 ))}
             </ScrollView>
-
-            {/* Botones alineados horizontalmente */}
+            {/* Botones de navegación para otras pantallas */}
             <View style={styles.buttonContainer}>
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Materiales')}>
                     <Text style={styles.buttonText}>Materiales</Text>
@@ -110,9 +110,12 @@ export default function UsuariosScreen({ navigation }: Props) {
                 <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Lugares')}>
                     <Text style={styles.buttonText}>Lugares</Text>
                 </TouchableOpacity>
-            </View>
 
-            {/* Botón de logout */}
+                <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Falla')}>
+                    <Text style={styles.buttonText}>Fallas</Text>
+                </TouchableOpacity>
+            </View>
+            {/* Botón para cerrar sesión */}
             <View style={styles.logoutButton}>
                 <TouchableOpacity style={styles.smallButton} onPress={handleLogout}>
                     <Text style={styles.buttonText}>Cerrar sesión</Text>
@@ -121,12 +124,12 @@ export default function UsuariosScreen({ navigation }: Props) {
         </View>
     );
 }
-
+// Estilos para el componente UsuariosScreen
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#F8FBFF',
+        backgroundColor: '#F9E5D5',
     },
     loader: {
         flex: 1,
@@ -134,7 +137,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     error: {
-        color: '#E74C3C',
+        color: '#C0392B',
         textAlign: 'center',
         marginTop: 24,
         fontSize: 16,
@@ -145,15 +148,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         borderRadius: 12,
         marginBottom: 20,
-        elevation: 3,
-        shadowColor: '#0066CC',
+        elevation: 4,
+        shadowColor: '#C49A6C',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
     },
     tableHeader: {
         flexDirection: 'row',
-        backgroundColor: '#0066CC',
+        backgroundColor: '#E38B5B',
         paddingVertical: 15,
         paddingHorizontal: 10,
         borderTopLeftRadius: 12,
@@ -173,17 +176,17 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 10,
         borderBottomWidth: 1,
-        borderBottomColor: '#E8F4FD',
+        borderBottomColor: '#F6B88F',
     },
     evenRow: {
         backgroundColor: '#FFFFFF',
     },
     oddRow: {
-        backgroundColor: '#F8FBFF',
+        backgroundColor: '#F9E5D5',
     },
     cellText: {
         flex: 1,
-        color: '#2C3E50',
+        color: '#634D3B',
         fontSize: 13,
         textAlign: 'center',
         fontWeight: '400',
@@ -196,22 +199,22 @@ const styles = StyleSheet.create({
         marginTop: 1,
     },
     button: {
-        backgroundColor: '#0066CC',
-        paddingVertical: 8,
-        paddingHorizontal: 14,
+        backgroundColor: '#E38B5B',
+        paddingVertical: 10,
+        paddingHorizontal: 8,
         borderRadius: 18,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#0066CC',
+        shadowColor: '#E38B5B',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
         elevation: 4,
-        width: 130,
+        width: 100,
     },
     buttonText: {
         color: '#FFFFFF',
-        fontSize: 13,
+        fontSize: 10,
         fontWeight: '600',
         textTransform: 'uppercase',
         letterSpacing: 0.5,
@@ -221,17 +224,17 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     smallButton: {
-        backgroundColor: '#4A90E2',
+        backgroundColor: '#F4A978',
         paddingVertical: 6,
         paddingHorizontal: 18,
         borderRadius: 16,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#4A90E2',
+        shadowColor: '#F4A978',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.2,
         shadowRadius: 3,
-        elevation: 1,
+        elevation: 2,
         width: 100,
     },
 });

@@ -1,3 +1,5 @@
+// Interface que define la estructura de un Material
+// Incluye campos obligatorios que representan un material en el sistema
 export interface Material {
     id_material: number;
     clave_material: string;

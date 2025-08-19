@@ -11,19 +11,30 @@ import { obtenerLugares } from '../services/lugares';
 import { Lugar } from '../types/Lugar';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
+// Definición de los parámetros de navegación para la pantalla Lugares
+// Esta lista define las pantallas que pueden ser navegadas desde la pantalla Lugares.
 type RootStackParamList = {
     Materiales: undefined;
     Usuarios: undefined;
     Lugares: undefined;
 };
 
+// Props para la pantalla Lugares
+// Utiliza NativeStackScreenProps para definir las propiedades de navegación y ruta que se pasan a la pantalla.
+// Esto permite acceder a la navegación y a los parámetros de la ruta.
 type Props = NativeStackScreenProps<RootStackParamList, 'Lugares'>;
 
+// Componente principal de la pantalla Lugares
+// Este componente se encarga de mostrar una lista de lugares obtenidos desde un servicio.
 export default function LugaresScreen({ navigation }: Props) {
     const [lugares, setLugares] = useState<Lugar[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
+    // Efecto para cargar los lugares al montar el componente
+    // Utiliza useEffect para llamar a fetchLugares una vez que el componente se ha montado.
+    // Esto asegura que los datos se obtengan al inicio y se actualicen en la pantalla.
+    // Si ocurre un error durante la carga, se muestra un mensaje de error.
     useEffect(() => {
         fetchLugares();
     }, []);
@@ -40,25 +51,29 @@ export default function LugaresScreen({ navigation }: Props) {
         }
     };
 
+    // Renderiza la pantalla de lugares
+    // Muestra un indicador de carga mientras se obtienen los datos.
     if (loading) {
         return <ActivityIndicator size="large" color="#0066CC" style={styles.loader} />;
     }
 
+    // Si hay un error, muestra un mensaje de error
+    // Utiliza un componente Text para mostrar el mensaje de error en la pantalla.
     if (error) {
         return <Text style={styles.error}>{error}</Text>;
     }
 
+    // Renderiza la lista de lugares
+    // Utiliza un ScrollView para permitir el desplazamiento si hay muchos lugares.
     return (
         <View style={styles.container}>
             <ScrollView style={styles.tableContainer}>
-                {/* Encabezado de la tabla */}
                 <View style={styles.tableHeader}>
                     <Text style={styles.headerText}>ID</Text>
                     <Text style={styles.headerText}>Nombre</Text>
                     <Text style={styles.headerText}>Estado</Text>
                 </View>
 
-                {/* Filas de la tabla */}
                 {lugares.map((lugar, index) => (
                     <View 
                         key={lugar.id_lugar.toString()} 
@@ -74,6 +89,8 @@ export default function LugaresScreen({ navigation }: Props) {
                 ))}
             </ScrollView>
 
+            {/* Botones para navegar a otras pantallas */}
+            {/* Estos botones permiten al usuario navegar a las pantallas de Usuarios y Materiales */}
             <View style={styles.buttonContainer}>
                 <TouchableOpacity
                     style={styles.button}
@@ -93,11 +110,13 @@ export default function LugaresScreen({ navigation }: Props) {
     );
 }
 
+// Estilos para la pantalla Lugares
+// Estos estilos definen la apariencia de los componentes en la pantalla, utilizando colores y tamaños específicos.
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#F8FBFF', // Azul muy claro, como agua pura
+        backgroundColor: '#F9E5D5',
     },
     loader: {
         flex: 1,
@@ -105,7 +124,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     error: {
-        color: '#E74C3C',
+        color: '#C0392B',
         textAlign: 'center',
         marginTop: 24,
         fontSize: 16,
@@ -116,15 +135,15 @@ const styles = StyleSheet.create({
         backgroundColor: '#FFFFFF',
         borderRadius: 12,
         marginBottom: 20,
-        elevation: 3,
-        shadowColor: '#0066CC',
+        elevation: 4,
+        shadowColor: '#C49A6C',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 4,
+        shadowOpacity: 0.2,
+        shadowRadius: 5,
     },
     tableHeader: {
         flexDirection: 'row',
-        backgroundColor: '#0066CC', // Azul Bonafont
+        backgroundColor: '#E38B5B',
         paddingVertical: 15,
         paddingHorizontal: 10,
         borderTopLeftRadius: 12,
@@ -144,17 +163,17 @@ const styles = StyleSheet.create({
         paddingVertical: 12,
         paddingHorizontal: 10,
         borderBottomWidth: 1,
-        borderBottomColor: '#E8F4FD', // Azul muy claro para separadores
+        borderBottomColor: '#F6B88F',
     },
     evenRow: {
         backgroundColor: '#FFFFFF',
     },
     oddRow: {
-        backgroundColor: '#F8FBFF', // Azul muy suave para filas alternas
+        backgroundColor: '#F9E5D5',
     },
     cellText: {
         flex: 1,
-        color: '#2C3E50',
+        color: '#634D3B',
         fontSize: 13,
         textAlign: 'center',
         fontWeight: '400',
@@ -167,17 +186,17 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     button: {
-        backgroundColor: '#0066CC', // Azul Bonafont
+        backgroundColor: '#E38B5B', 
         paddingVertical: 14,
         paddingHorizontal: 20,
-        borderRadius: 25, // Más redondeado como gota de agua
+        borderRadius: 25,
         alignItems: 'center',
         justifyContent: 'center',
-        shadowColor: '#0066CC',
+        shadowColor: '#E38B5B',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.25,
-        shadowRadius: 4,
-        elevation: 4,
+        shadowRadius: 5,
+        elevation: 5,
         flexGrow: 1,
         minWidth: '48%',
         marginVertical: 4,

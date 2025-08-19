@@ -7,16 +7,15 @@ import {
     Text,
     StyleSheet,
     TextInput,
-    Button,
     Alert,
 } from 'react-native';
-
+//Imposta la librería de código de barras
 import Barcode from '@adrianso/react-native-barcode-builder';
 import { obtenerMateriales } from '../services/materiales';
 import { Material } from '../types/Material';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-
+// Definición de los tipos de navegación
 type RootStackParamList = {
     Materiales: { scanCode?: string; material?: Material } | undefined;
     Usuarios: undefined;
@@ -24,10 +23,12 @@ type RootStackParamList = {
     BarcodeScanner: undefined;
     Reporte: undefined;
 };
-
+// Props para la pantalla MaterialesScreen
 type Props = NativeStackScreenProps<RootStackParamList, 'Materiales'>;
 
+// Componente principal de la pantalla MaterialesScreen
 export default function MaterialesScreen({ navigation, route }: Props) {
+    // Estados para manejar los materiales, carga, error, búsqueda, paginación y código de barras.
     const [materiales, setMateriales] = useState<Material[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -36,15 +37,15 @@ export default function MaterialesScreen({ navigation, route }: Props) {
     const [barcodeVisible, setBarcodeVisible] = useState(false);
     const [barcodeValue, setBarcodeValue] = useState('');
     const itemsPerPage = 20;
-
+    // Estado para manejar el material escaneado
     const [materialEscaneado, setMaterialEscaneado] = useState<Material | null>(null);
-
+    // Efecto para manejar la navegación y los parámetros de la ruta
     useEffect(() => {
         if (route.params?.material) {
             const material = route.params.material;
             setMateriales([material]);
             setBarcodeValue(material.clave_material || '');
-            setMaterialEscaneado(material); // Guarda el material completo
+            setMaterialEscaneado(material);
             setBarcodeVisible(true);
         }
         else if (route.params?.scanCode) {
@@ -52,7 +53,7 @@ export default function MaterialesScreen({ navigation, route }: Props) {
             setPage(1);
         }
     }, [route.params?.material, route.params?.scanCode]);
-
+    // Efecto para obtener los materiales al cargar la pantalla
     useEffect(() => {
         (async () => {
             try {
@@ -65,39 +66,47 @@ export default function MaterialesScreen({ navigation, route }: Props) {
             }
         })();
     }, []);
-
+    // Filtrado y paginación de los materiales
     const filtered = materiales.filter((mat) =>
         [mat.id_material, mat.clave_material, mat.descripcion, mat.generico,
         mat.clasificacion, mat.existencia, mat.costo_promedio, mat.id_lugar]
             .some(v => String(v).toLowerCase().includes(search.toLowerCase()))
     );
-
+    // Paginación de los materiales filtrados
     const paginated = filtered.slice((page - 1) * itemsPerPage, page * itemsPerPage);
-
+    // Función para manejar la generación del código de barras
     const handleShowBarcode = (mat: Material) => {
         const raw = String(mat.clave_material || '').trim();
         if (!raw) {
             return Alert.alert('Error', 'Clave inválida para generar código de barras.');
         }
         setBarcodeValue(raw);
-        setMaterialEscaneado(mat); // Agregué esto para mostrar info del material
+        setMaterialEscaneado(mat);
         setBarcodeVisible(true);
     };
-
+    // Si hay un material escaneado, se muestra el código de barras.
     if (loading) {
         return <ActivityIndicator style={styles.loader} size="large" color="#0066CC" />;
     }
     if (error) {
         return <Text style={styles.error}>{error}</Text>;
     }
-    
+
+    // Función para calcular el ancho de la línea del código de barras según la longitud del valor.
     const calcularAnchoLinea = (valor: string) => {
         if (valor.length <= 6) return 2.5;
         if (valor.length <= 12) return 2;
         if (valor.length <= 20) return 1.5;
-        return 1; // Muy largo
+        return 1;
+    };
+    // Función para formatear el precio a dos decimales
+    const formatearPrecio = (precio: any): string => {
+        if (precio == null || precio === undefined) return '0.00';
+        const numero = typeof precio === 'string' ? parseFloat(precio) : precio;
+        return isNaN(numero) ? '0.00' : numero.toFixed(2);
     };
 
+    // Renderizado del componente
     return (
         <View style={styles.container}>
             <TextInput
@@ -124,8 +133,8 @@ export default function MaterialesScreen({ navigation, route }: Props) {
                         <Text style={styles.cardDetail}>Clave: {item.clave_material}</Text>
                         <Text style={styles.cardDetail}>Genérico: {item.generico}</Text>
                         <Text style={styles.cardDetail}>Existencia: {item.existencia}</Text>
-                        <Text style={styles.cardDetail}>Costo: ${item.costo_promedio?.toFixed(2)}</Text>
-                        
+                        <Text style={styles.cardDetail}>Costo: ${formatearPrecio(item.costo_promedio)}</Text>
+
                         <TouchableOpacity
                             style={styles.barcodeButton}
                             onPress={() => handleShowBarcode(item)}
@@ -140,18 +149,18 @@ export default function MaterialesScreen({ navigation, route }: Props) {
             />
 
             <View style={styles.pagination}>
-                <TouchableOpacity 
-                    style={[styles.pageButton, page === 1 && styles.pageButtonDisabled]} 
-                    onPress={() => setPage(p => Math.max(p - 1, 1))} 
+                <TouchableOpacity
+                    style={[styles.pageButton, page === 1 && styles.pageButtonDisabled]}
+                    onPress={() => setPage(p => Math.max(p - 1, 1))}
                     disabled={page === 1}
                 >
                     <Text style={[styles.pageButtonText, page === 1 && styles.pageButtonTextDisabled]}>
-                        ← Anterior
+                        ←
                     </Text>
                 </TouchableOpacity>
-                
+
                 <Text style={styles.pageText}>Página {page}</Text>
-                
+
                 <TouchableOpacity
                     style={[styles.pageButton, page >= Math.ceil(filtered.length / itemsPerPage) && styles.pageButtonDisabled]}
                     onPress={() => setPage(p =>
@@ -160,7 +169,7 @@ export default function MaterialesScreen({ navigation, route }: Props) {
                     disabled={page >= Math.ceil(filtered.length / itemsPerPage)}
                 >
                     <Text style={[styles.pageButtonText, page >= Math.ceil(filtered.length / itemsPerPage) && styles.pageButtonTextDisabled]}>
-                        Siguiente →
+                        →
                     </Text>
                 </TouchableOpacity>
             </View>
@@ -174,12 +183,11 @@ export default function MaterialesScreen({ navigation, route }: Props) {
                 </TouchableOpacity>
             </View>
 
-            {/* CÓDIGO DE BARRAS - MANTENIDO EXACTAMENTE IGUAL */}
             {barcodeVisible && (
                 <View style={styles.overlay}>
                     <View style={styles.modal}>
                         <View style={{ backgroundColor: '#FFFFFF', padding: 40, borderRadius: 12 }}>
-                            <Text style={{ margin:3 }}>Código de barras</Text>
+                            <Text style={{ margin: 3 }}>Código de barras</Text>
                             <Barcode
                                 value={barcodeValue}
                                 format="CODE128"
@@ -201,12 +209,12 @@ export default function MaterialesScreen({ navigation, route }: Props) {
         </View>
     );
 }
-
+// Estilos personalizados para la pantalla MaterialesScreen
 const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
-        backgroundColor: '#F8FBFF', // Azul claro Bonafont
+        backgroundColor: '#F9E5D5',
     },
     title: {
         fontSize: 28,
@@ -285,12 +293,12 @@ const styles = StyleSheet.create({
     },
     barcodeButton: {
         marginTop: 12,
-        backgroundColor: '#0066CC', // Azul Bonafont
+        backgroundColor: '#E38B5B',
         paddingVertical: 10,
         paddingHorizontal: 12,
         borderRadius: 20,
         alignItems: 'center',
-        shadowColor: '#0066CC',
+        shadowColor: '#E38B5B',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.2,
         shadowRadius: 4,
@@ -310,28 +318,32 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
     },
     pageButton: {
-        backgroundColor: '#0066CC',
-        paddingVertical: 10,
-        paddingHorizontal: 20,
+        backgroundColor: '#E38B5B',
+        paddingVertical: 5,
+        paddingHorizontal: 15,
         borderRadius: 20,
-        shadowColor: '#0066CC',
-        shadowOffset: { width: 0, height: 2 },
+        shadowColor: '#E38B5B',
+        shadowOffset: { width: 0, height: 5 },
         shadowOpacity: 0.2,
         shadowRadius: 4,
-        elevation: 3,
+        elevation: 10,
     },
     pageButtonDisabled: {
         backgroundColor: '#B0B0B0',
         shadowOpacity: 0,
         elevation: 0,
+        fontWeight: '600',
+        fontSize: 25,
     },
     pageButtonText: {
         color: '#FFFFFF',
         fontWeight: '600',
-        fontSize: 14,
+        fontSize: 25,
     },
     pageButtonTextDisabled: {
         color: '#CCCCCC',
+        fontWeight: '600',
+        fontSize: 25,
     },
     pageText: {
         fontWeight: '600',
@@ -342,18 +354,18 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         flexWrap: 'wrap',
         justifyContent: 'space-between',
-        marginTop: 25,
+        marginTop: 12,
         gap: 10,
     },
     button: {
-        backgroundColor: '#0066CC', // Azul Bonafont
+        backgroundColor: '#E38B5B',
         paddingVertical: 12,
         paddingHorizontal: 14,
         borderRadius: 25,
         alignItems: 'center',
         flexGrow: 1,
-        minWidth: '28%',
-        shadowColor: '#0066CC',
+        minWidth: '15%',
+        shadowColor: '#E38B5B',
         shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.25,
         shadowRadius: 4,
@@ -366,8 +378,6 @@ const styles = StyleSheet.create({
         fontSize: 13,
         letterSpacing: 0.5,
     },
-    
-    // ESTILOS DEL CÓDIGO DE BARRAS - EXACTAMENTE IGUALES
     overlay: {
         ...StyleSheet.absoluteFillObject,
         backgroundColor: 'rgba(0,0,0,0.5)',
@@ -383,7 +393,7 @@ const styles = StyleSheet.create({
     },
     closeButton: {
         marginTop: 16,
-        backgroundColor: '#0066CC', // Solo cambié color a Bonafont
+        backgroundColor: '#E38B5B',
         paddingVertical: 10,
         paddingHorizontal: 20,
         borderRadius: 8,
